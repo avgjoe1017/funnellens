@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import attribution_router, imports_router, recommendations_router
+from app.api import attribution_router, imports_router, recommendations_router, tracking_links_router
 from app.config import settings
 
 app = FastAPI(
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(imports_router)
 app.include_router(attribution_router)
 app.include_router(recommendations_router)
+app.include_router(tracking_links_router)
 
 
 @app.get("/health")

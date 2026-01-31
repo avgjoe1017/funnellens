@@ -13,6 +13,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.creator import Creator
+    from app.models.tracking import TrackingLink
 
 
 class AttributionMethod(str, Enum):
@@ -51,6 +52,12 @@ class Fan(Base):
     acquired_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     referral_link_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
 
+    # Tracking link (deterministic attribution)
+    tracking_link_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tracking_links.id")
+    )
+    tracking_link_code: Mapped[str | None] = mapped_column(String(50))
+
     # Attribution
     attributed_content_type: Mapped[str | None] = mapped_column(String(50))
     attribution_method: Mapped[str | None] = mapped_column(String(20))
@@ -71,11 +78,15 @@ class Fan(Base):
     revenue_events: Mapped[list["RevenueEvent"]] = relationship(
         "RevenueEvent", back_populates="fan", cascade="all, delete-orphan"
     )
+    tracking_link: Mapped["TrackingLink | None"] = relationship(
+        "TrackingLink", back_populates="fans"
+    )
 
     __table_args__ = (
         Index("idx_fans_creator", "creator_id"),
         Index("idx_fans_acquired", "acquired_at"),
         Index("idx_fans_content_type", "attributed_content_type"),
+        Index("idx_fans_tracking_link", "tracking_link_id"),
     )
 
 

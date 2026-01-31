@@ -7,6 +7,7 @@ from app.models.fan import Fan, RevenueEvent
 from app.models.import_log import Import
 from app.models.social_post import PostSnapshot, SocialPost
 from app.models.taxonomy import ContentType
+from app.models.tracking import LinkClick, LinkPlatform, TrackingLink
 
 __all__ = [
     "Agency",
@@ -19,4 +20,7 @@ __all__ = [
     "ConfounderEvent",
     "Import",
     "ContentType",
+    "TrackingLink",
+    "LinkClick",
+    "LinkPlatform",
 ]

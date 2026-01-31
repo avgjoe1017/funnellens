@@ -217,6 +217,8 @@ Solution:
 - ❌ CSV import wizard UI
 - ❌ Monday email digest (scheduling + delivery)
 - ❌ User authentication
+- ❌ Click tracking redirect (v1.5)
+- ❌ Smart Linktree landing pages (v2)
 
 ---
 
@@ -486,6 +488,90 @@ HYPOTHESES (Need More Data)
 - Import wizard with CSV upload
 - Settings page
 - Authentication flow
+
+---
+
+## Phase 6.5: Tracking Links (Completed)
+
+### The Strategic Value
+Tracking links are the **ground truth** for attribution. They enable:
+- Deterministic attribution (0.95 confidence vs probabilistic)
+- LTV analysis by content type
+- Validation of probabilistic attribution via backtesting
+- Foundation for v1.5 Smart Linktree
+
+### Step 6.5.1: Data Models
+- **What:** Created `TrackingLink` and `LinkClick` models in `app/models/tracking.py`
+- **Why:** Store links tagged with content type + platform
+- **Key fields:**
+  - `code`: The tracking code (e.g., "TT_STORY_JAN")
+  - `source_platform`: tiktok, instagram, twitter, reddit, youtube, other
+  - `content_type`: From taxonomy — THIS IS THE KEY DIFFERENTIATOR
+  - `total_subs`, `total_revenue`, `avg_fan_ltv`: Aggregated metrics
+
+### Step 6.5.2: Database Migration
+- **What:** Created `alembic/versions/002_tracking_links.py`
+- **Why:** Add tables and update Fan model with tracking link references
+- **Changes:**
+  - `tracking_links` table with content type + platform tags
+  - `link_clicks` table for v1.5 click tracking
+  - Added `tracking_link_id` and `tracking_link_code` to `fans` table
+  - Added `of_username` to `creators` for URL generation
+
+### Step 6.5.3: API Endpoints
+- **What:** Created `app/api/tracking_links.py` with 9 endpoints
+- **Why:** Full CRUD + analytics for tracking links
+
+**Endpoints:**
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/v1/tracking-links/` | POST | Create a new tracking link |
+| `/api/v1/tracking-links/creator/{id}` | GET | List all links for creator |
+| `/api/v1/tracking-links/{id}` | GET | Get single link details |
+| `/api/v1/tracking-links/{id}/stats` | GET | Detailed stats with baseline comparison |
+| `/api/v1/tracking-links/{id}/fans` | GET | Fans who subscribed via link |
+| `/api/v1/tracking-links/{id}` | DELETE | Deactivate link (soft delete) |
+| `/api/v1/tracking-links/{id}/refresh-metrics` | POST | Recalculate aggregates |
+| `/api/v1/tracking-links/analytics/by-content-type/{id}` | GET | Analytics grouped by content type |
+| `/api/v1/tracking-links/analytics/by-platform/{id}` | GET | Analytics grouped by platform |
+
+### Step 6.5.4: Test Results
+
+**Create Link Test:**
+```json
+{
+  "id": "9944ed00-6cd4-47e4-bc6a-a66208bad1a4",
+  "code": "TI_STORY_JAN",
+  "full_url": "https://onlyfans.com/sarahcontent?c=TI_STORY_JAN",
+  "source_platform": "tiktok",
+  "content_type": "storytime",
+  "campaign": "JAN_WEEK1"
+}
+```
+✅ Auto-generated code from platform + content type + month
+
+**List Links Test:**
+✅ Returns all active links for creator, sorted by creation date
+
+**Analytics by Content Type Test:**
+```json
+{
+  "by_content_type": [
+    {"content_type": "storytime", "total_links": 1, "total_subs": 0, "avg_ltv": 0.0},
+    {"content_type": "grwm", "total_links": 1, "total_subs": 0, "avg_ltv": 0.0}
+  ]
+}
+```
+✅ Groups metrics by content type for comparison
+
+### Competitive Advantage
+| Feature | FansMetric | FunnelLens |
+|---------|------------|------------|
+| Create tracking links | ✅ | ✅ |
+| See subs per link | ✅ | ✅ |
+| **Tag links with content type** | ❌ | ✅ |
+| **Compare LTV by content type** | ❌ | ✅ |
+| **Churn rate by content type** | ❌ | ✅ |
 
 ---
 

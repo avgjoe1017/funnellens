@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.models.confounder import ConfounderEvent
     from app.models.fan import Fan
     from app.models.social_post import PostSnapshot, SocialPost
+    from app.models.tracking import TrackingLink
 
 
 class CreatorStatus(str, Enum):
@@ -41,6 +42,7 @@ class Creator(Base):
     tiktok_handle: Mapped[str | None] = mapped_column(String(100))
     instagram_handle: Mapped[str | None] = mapped_column(String(100))
     of_account_id: Mapped[str | None] = mapped_column(String(100))
+    of_username: Mapped[str | None] = mapped_column(String(100))  # For tracking link URLs
 
     # Baselines (computed from pre-window periods)
     baseline_subs_per_day: Mapped[float | None] = mapped_column(Float)
@@ -71,6 +73,9 @@ class Creator(Base):
     )
     confounder_events: Mapped[list["ConfounderEvent"]] = relationship(
         "ConfounderEvent", back_populates="creator", cascade="all, delete-orphan"
+    )
+    tracking_links: Mapped[list["TrackingLink"]] = relationship(
+        "TrackingLink", back_populates="creator", cascade="all, delete-orphan"
     )
 
     __table_args__ = (
