@@ -32,7 +32,7 @@ export function ConfounderAlert({ warning, confounders }: ConfounderAlertProps) 
                   className="bg-amber-100 rounded px-3 py-2 text-sm text-amber-800"
                 >
                   <span className="font-medium capitalize">
-                    {c.event_type.replace("_", " ")}
+                    {(c.event_type || "unknown").replace("_", " ")}
                   </span>
                   {c.description && (
                     <span className="text-amber-700"> — {c.description}</span>
