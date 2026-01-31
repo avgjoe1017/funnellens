@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   BarChart,
   Bar,
@@ -27,6 +28,12 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export function LiftChart({ rankings }: LiftChartProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const data = rankings.map((r) => ({
     name: CONTENT_TYPE_LABELS[r.content_type] || r.content_type,
     lift: r.lift_pct ?? 0,
@@ -46,33 +53,35 @@ export function LiftChart({ rankings }: LiftChartProps) {
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Content Type Performance (Lift %)
       </h3>
-      <div className="h-80 w-full" style={{ minWidth: 300, minHeight: 300 }}>
-        <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={300}>
-          <BarChart data={data} layout="vertical" margin={{ left: 80, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-            <XAxis
-              type="number"
-              domain={["dataMin - 10", "dataMax + 10"]}
-              tickFormatter={(value) => `${value}%`}
-            />
-            <YAxis type="category" dataKey="name" width={75} />
-            <Tooltip
-              formatter={(value: number) => [`${value.toFixed(1)}%`, "Lift"]}
-              labelFormatter={(label) => label}
-            />
-            <ReferenceLine x={0} stroke="#666" />
-            <Bar dataKey="lift" radius={[0, 4, 4, 0]}>
-              {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={getBarColor(entry.lift, entry.tier)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <div style={{ width: "100%", height: 320 }}>
+        {mounted && (
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={data} layout="vertical" margin={{ left: 80, right: 20, top: 10, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+              <XAxis
+                type="number"
+                domain={["dataMin - 10", "dataMax + 10"]}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <YAxis type="category" dataKey="name" width={75} />
+              <Tooltip
+                formatter={(value: number) => [`${value.toFixed(1)}%`, "Lift"]}
+                labelFormatter={(label) => label}
+              />
+              <ReferenceLine x={0} stroke="#666" />
+              <Bar dataKey="lift" radius={[0, 4, 4, 0]}>
+                {data.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={getBarColor(entry.lift, entry.tier)}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
-      <div className="mt-4 flex gap-4 text-sm text-gray-600">
+      <div className="mt-4 flex flex-wrap gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-500" />
           <span>Confident Positive</span>
