@@ -213,7 +213,8 @@ Solution:
 - Snapshot creation on import (verified in seed script)
 
 ### What's Not Built Yet
-- ❌ Frontend dashboard
+- ❌ Multi-creator agency view
+- ❌ CSV import wizard UI
 - ❌ Monday email digest (scheduling + delivery)
 - ❌ User authentication
 
@@ -424,19 +425,67 @@ HYPOTHESES (Need More Data)
 
 ---
 
-## Phase 6: Frontend Dashboard (Future)
+## Phase 6: Frontend Dashboard (Completed)
 
-### Planned Views
-1. **Agency Dashboard** — Overview of all creators
-2. **Creator Detail** — Content type performance, recommendations
-3. **Import Wizard** — CSV upload with column mapping
-4. **Tagging Queue** — ML-suggested content type tagging
-5. **Settings** — Agency configuration, team members
+### Step 6.1: Project Setup
+- **What:** Created Next.js 16 app with TypeScript, Tailwind CSS
+- **Why:** Modern React framework with App Router for dashboard
+- **Location:** `frontend/` directory
+- **Tech Stack:**
+  - Next.js 16 with App Router
+  - React 19 + TanStack Query v5
+  - Recharts for visualizations (React 19 compatible)
+  - Tailwind CSS for styling
+  - Lucide React for icons
 
-### Tech Stack (from spec)
-- Next.js App Router
-- React + TanStack Query
-- Tremor for visualizations
+### Step 6.2: API Client
+- **What:** Created `frontend/src/lib/api.ts` with typed API functions
+- **Why:** Type-safe data fetching with proper error handling
+- **Features:**
+  - Axios-based HTTP client
+  - Full TypeScript types for all API responses
+  - Functions: `getRecommendationReport`, `getContentRankings`, `getAttributionWindow`, etc.
+
+### Step 6.3: Dashboard Components
+- **What:** Built reusable components in `frontend/src/components/`
+- **Why:** Modular, reusable UI building blocks
+
+**Components created:**
+| Component | Purpose |
+|-----------|---------|
+| `LiftChart` | Horizontal bar chart showing lift % by content type |
+| `RecommendationCard` | Card displaying action, lift, and caveats |
+| `StatsCard` | KPI display with icon and trend indicator |
+| `WeeklyPlan` | Weekly posting plan with progress bars |
+| `ConfounderAlert` | Dismissible warning banner for confounders |
+
+### Step 6.4: Dashboard Page
+- **What:** Main dashboard at `frontend/src/app/page.tsx`
+- **Why:** Single-page view of creator performance
+- **Features:**
+  - Stats grid: Total subs, revenue, lift %, top performer
+  - Lift chart: Visual ranking of content types
+  - Weekly plan: Suggested posting schedule
+  - Recommendation cards: Actionable suggestions per content type
+  - Confounder alert: Prominent warning when data is compromised
+  - Data quality notes: Transparency about confidence levels
+
+### Step 6.5: Test Results
+- **Frontend URL:** http://localhost:3001
+- **Backend URL:** http://localhost:8080
+- ✅ Dashboard loads and displays loading spinner
+- ✅ API calls to backend successful (TanStack Query)
+- ✅ Charts render with real data
+- ✅ Confounder warning displays when present
+- ✅ Recommendation cards show correct actions and tiers
+
+**Screenshots available at:** Open http://localhost:3001 in browser
+
+### Remaining Frontend Work (Future)
+- Agency overview page (multi-creator view)
+- Import wizard with CSV upload
+- Settings page
+- Authentication flow
 
 ---
 
@@ -470,8 +519,11 @@ alembic upgrade head
 # Seed data
 python scripts/seed_sample_data.py
 
-# Start server
+# Start backend server
 uvicorn app.main:app --reload --port 8080
+
+# Start frontend (in separate terminal)
+cd frontend && npm run dev
 ```
 
 ### Test IDs
@@ -479,6 +531,7 @@ uvicorn app.main:app --reload --port 8080
 - Creator: `8b80261c-e62d-4744-b017-f3d5d057199b`
 
 ### URLs
+- Frontend: http://localhost:3001
 - API: http://127.0.0.1:8080
 - Docs: http://127.0.0.1:8080/docs
 - GitHub: https://github.com/avgjoe1017/funnellens
