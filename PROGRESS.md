@@ -203,15 +203,18 @@ Solution:
 - ✅ Attribution service with all endpoints tested
 - ✅ Confidence scoring with Poisson statistical tests
 - ✅ Confounder detection working
+- ✅ Recommendation engine with two-tier output
+- ✅ Weekly posting plan generation
+- ✅ Content type rankings
+- ✅ Text-formatted reports for email
 
 ### What's Built But Untested in Production
 - CSV import endpoints (tested with sample data in dev)
 - Snapshot creation on import (verified in seed script)
 
 ### What's Not Built Yet
-- ❌ Recommendation engine enhancements (advanced ranking, weekly targets)
 - ❌ Frontend dashboard
-- ❌ Monday email digest
+- ❌ Monday email digest (scheduling + delivery)
 - ❌ User authentication
 
 ---
@@ -307,19 +310,117 @@ money_talk:    +67.8% lift, tier=hypothesis, confidence=0.30
 
 ---
 
-## Phase 5: Recommendation Engine (Future)
+## Phase 5: Recommendation Engine (Completed)
 
-### Step 5.1: Two-Tier Output
-- **Confident:** High confidence, act on it
-- **Hypothesis:** Worth testing, don't bet on it
+### Step 5.1: RecommendationEngine Service
+- **What:** Built `RecommendationEngine` class in `app/services/recommendation.py`
+- **Why:** Transform attribution data into actionable recommendations
+- **Implementation:**
+  ```python
+  class RecommendationTier(Enum):
+      CONFIDENT = "confident"      # High confidence, act on it
+      HYPOTHESIS = "hypothesis"    # Worth testing, don't bet on it
+      INSUFFICIENT_DATA = "insufficient_data"
 
-### Step 5.2: Content Type Rankings
-- Rank content types by lift percentage
-- Suggest weekly posting targets
+  class RecommendationAction(Enum):
+      INCREASE = "increase"   # Post more of this type
+      MAINTAIN = "maintain"   # Keep current frequency
+      DECREASE = "decrease"   # Consider reducing
+      TEST = "test"           # Run a test to gather more data
+  ```
+- **Key features:**
+  - Two-tier confidence system (confident vs hypothesis)
+  - Weekly posting plan generation
+  - Confounder-aware recommendations
+  - Data quality assessment
 
-### Step 5.3: Confounder Warnings
-- Flag recommendations when confounders overlap
-- Reduce confidence scores appropriately
+### Step 5.2: Recommendation API Endpoints
+- **What:** Created `app/api/recommendations.py` with 4 endpoints
+- **Why:** HTTP interface for frontend consumption
+
+**Endpoints:**
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/v1/recommendations/report/{creator_id}` | GET | Full recommendation report |
+| `/api/v1/recommendations/report/{creator_id}/text` | GET | Text-formatted report (for email) |
+| `/api/v1/recommendations/quick/{creator_id}` | GET | Quick summary of actions |
+| `/api/v1/recommendations/rankings/{creator_id}` | GET | Content type rankings by lift |
+
+### Step 5.3: Test Results
+
+**Full Report Test:**
+```json
+{
+  "creator_id": "8b80261c-e62d-4744-b017-f3d5d057199b",
+  "period_days": 30,
+  "total_subs": 48,
+  "has_confounders": true,
+  "confounder_warning": "⚠️ CONFOUNDER ALERT: price_change detected...",
+  "recommendations": [
+    {"content_type": "grwm", "action": "test", "tier": "hypothesis", "lift_pct": -43.4},
+    {"content_type": "thirst_trap", "action": "test", "tier": "hypothesis", "lift_pct": -45.4},
+    ...
+  ],
+  "weekly_plan": {
+    "total_posts": 7,
+    "breakdown": {},
+    "rationale": "Weekly plan unavailable due to confounders..."
+  }
+}
+```
+✅ Confounder detection working — all recommendations marked "test" action
+✅ Weekly plan correctly withheld due to confounders
+✅ Two-tier system correctly marks everything as "hypothesis"
+
+**Text Report Test:**
+```
+============================================================
+FUNNELLENS CONTENT STRATEGY REPORT
+============================================================
+
+Period: 30 days
+Total Subscribers: 48
+
+⚠️ CONFOUNDER ALERT: price_change detected during this period...
+
+----------------------------------------
+HYPOTHESES (Need More Data)
+----------------------------------------
+
+🧪 GRWM (-43% lift)
+   Shows -43% lift but confounders detected. Retest in a clean window.
+   → Change from 1 to 3 posts/week
+   ⚠️ Confounders detected - results may be skewed
+   📊 Hypothesis only - needs more data to confirm
+```
+✅ Human-readable format ready for email digests
+
+**Rankings Test:**
+```json
+{
+  "rankings": [
+    {"rank": 1, "content_type": "grwm", "lift_pct": -43.4},
+    {"rank": 2, "content_type": "thirst_trap", "lift_pct": -45.4},
+    {"rank": 3, "content_type": "storytime", "lift_pct": -46.9},
+    ...
+  ]
+}
+```
+✅ Content types ranked by lift percentage
+
+**Quick Summary Test:**
+```json
+{
+  "has_confounders": true,
+  "top_performer": null,
+  "actions": {
+    "increase": [],
+    "decrease": [],
+    "test": ["grwm", "thirst_trap", "storytime", "behind_scenes", "money_talk", "other"]
+  }
+}
+```
+✅ Quick dashboard-friendly summary working
 
 ---
 
