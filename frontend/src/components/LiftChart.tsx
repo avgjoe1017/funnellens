@@ -46,8 +46,8 @@ export function LiftChart({ rankings }: LiftChartProps) {
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
         Content Type Performance (Lift %)
       </h3>
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-80 w-full" style={{ minWidth: 300, minHeight: 300 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={300}>
           <BarChart data={data} layout="vertical" margin={{ left: 80, right: 20 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
             <XAxis
